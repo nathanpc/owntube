@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""A YouTube data dumper utility that uses the official YouTube API."""
+
+from os.path import abspath, dirname, exists
+import re
+import os
+import json
+
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+from googleapiclient.errors import HttpError
+
+from sty import fg, ef, rs
+
+def main():
+    # Ensure we have an output directory.
+    output_dir = os.getcwd() + '/dump'
+    if not exists(output_dir):
+        os.makedirs(output_dir)
+
+    # Get API client and fetch subscriptions.
+    youtube = get_youtube_client()
+    dump_subscriptions(youtube, output_dir)
+
+def get_youtube_client():
+    """Authenticates with the OAuth server and creates a new API client."""
+    # Setup the API parameters.
+    os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+    api_service_name = 'youtube'
+    api_version = 'v3'
+    scopes = ['https://www.googleapis.com/auth/youtube.readonly']
+    client_secrets_file = dirname(dirname(abspath(__file__))) + '/secrets.json'
+
+    # Get credentials.
+    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+        client_secrets_file, scopes)
+    credentials = flow.run_local_server(port=5001)
+
+	# Create an API client.
+    return googleapiclient.discovery.build(api_service_name, api_version,
+                                           credentials=credentials)
+
+def dump_subscriptions(youtube, output_dir):
+    """Dumps all of the user subscriptions (with video info) into JSON files."""
+    print('Fetching subscriptions...')
+
+    # Compile regular expression for filename slugs.
+    fnregex = re.compile(r'[^A-Za-z0-9]', re.UNICODE)
+
+    # Fetch the first batch of subscriptions.
+    request = None
+    response = None
+    try:
+        request = youtube.subscriptions().list(
+            part='snippet,contentDetails',
+            maxResults=50,
+            mine=True)
+        response = request.execute()
+        if response is None:
+            print(f"{fg.red}You don't have any subscriptions to fetch{fg.rs}")
+            return
+    except HttpError as err:
+        print(f'{fg.red}Error fetching batch of subscriptions.\n{err.reason}\n'
+              f'{err.error_details}{fg.rs}')
+        return None
+
+    # Process the subscription and go to the next one.
+    index = 1
+    total = response['pageInfo']['totalResults']
+    while request is not None:
+        # Process each channel object.
+        for item in response['items']:
+            subscription = item['snippet']
+
+            # Fetch the videos.
+            print(f'[{fg.cyan}{index}/{total}{fg.rs}] Fetching videos from '
+                f'{fg.yellow}{subscription["title"]}{fg.rs}...')
+            subscription['videos'] = fetch_videos(
+                youtube, subscription["resourceId"]["channelId"],
+                f'{index}/{total}')
+
+            # Export the gathered information to a JSON dump.
+            fname = fnregex.sub('', subscription["title"]) + \
+                f'_{subscription["resourceId"]["channelId"]}.json'
+            with open(f'{output_dir}/{fname}', 'w') as fh:
+                json.dump(subscription, fh, indent='\t')
+
+            index += 1
+
+        # Fetch the next batch of subscriptions.
+        try:
+            request = youtube.subscriptions().list_next(request, response)
+            if request is not None:
+                response = request.execute()
+        except HttpError as err:
+            print(f'{fg.red}Error fetching batch of subscriptions.\n'
+                f'{err.reason}\n{err.error_details}{fg.rs}')
+            return None
+
+    print(f'{fg.green}Finished dumping all of your subscriptions!{fg.rs}')
+
+def fetch_videos(youtube, channel_id, idx_prefix = ''):
+    """Fetches all of the videos from a channel."""
+    videos = []
+
+    # Make sure we have a separator in our index prefix
+    if idx_prefix != '':
+        idx_prefix += ' - '
+
+    # Get channel videos playlist ID. No need to query the API:
+    # https://stackoverflow.com/questions/18953499/#comment115468368_36387404
+    playlistid = f'{channel_id[:1]}U{channel_id[2:]}'
+
+    # Get the channel's uploaded videos and stream VODs.
+    request = None
+    response = None
+    try:
+        request = youtube.playlistItems().list(
+            part="snippet",
+            maxResults=50,
+            playlistId=playlistid)
+        response = request.execute()
+    except HttpError as err:
+        print(f'{fg.red}Error fetching batch of videos from {channel_id}.\n'
+              f'{err.reason}\n{err.error_details}{fg.rs}')
+        return None
+
+    # Go through channel's videos.
+    index = 1
+    total = response['pageInfo']['totalResults']
+    while request is not None:
+        # Process each video object.
+        for item in response['items']:
+            video = item['snippet']
+            print(f'[{fg.cyan}{idx_prefix}{index}/{total}{fg.rs}] '
+                    f'Processing video {ef.italic}{video["title"]}'
+                    f'{rs.italic}')
+
+            # Add the video to the channel's video list.
+            videos.append(video)
+            index += 1
+
+        # Fetch the next batch of videos.
+        try:
+            request = youtube.playlistItems().list_next(request, response)
+            if request is not None:
+                response = request.execute()
+        except HttpError as err:
+            print(f'{fg.red}Error fetching batch of videos from {channel_id}.\n'
+                f'{err.reason}\n{err.error_details}{fg.rs}')
+            return videos
+
+    return videos
+
+if __name__ == '__main__':
+    main()
