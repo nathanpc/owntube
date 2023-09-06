@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 
+from os.path import abspath, dirname
 from datetime import datetime
+
+import requests
+from requests.exceptions import HTTPError
+
+from sty import fg
+
+from commonutils import download_image
 
 class Video:
     """Representation of an YouTube video."""
@@ -14,6 +22,8 @@ class Video:
         self.published_date = published_date
         self.duration = duration
 
+        self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
+
     @staticmethod
     def import_from_dump(channel, video):
         """Imports data from a JSON object inside of a dump made with ytdump."""
@@ -22,6 +32,26 @@ class Video:
                      datetime.fromisoformat(video['publishedAt']), None)
         # TODO: Save the video to the database.
 
-        # TODO: Download thumbnail.
+        # Download the thumbnail.
+        self._fetch_thumbnail(video['thumbnails'])
 
         return self
+
+    def _fetch_thumbnail(self, thumbs):
+        """Downloads the video's thumbnail from the thumbnails list."""
+        url = None
+
+        # Get the highest resolution thumbnail possible.
+        resolution = 0
+        for name, thumbnail in thumbs.items():
+            tbres = thumbnail['width'] * thumbnail['height']
+            if tbres > resolution:
+                resolution = tbres
+                url = thumbnail["url"]
+
+        # Actually download the thumbnail.
+        try:
+            download_image(url, f'{self._thumbs_dir}/{self.video_id}.jpg')
+        except HTTPError as err:
+            print(f'{fg.red}Error: Failed to fetch video thumbnail from {url}\n'
+                  f'{err}{fg.rs}')
