@@ -9,12 +9,15 @@ from requests.exceptions import HTTPError
 from sty import fg
 
 from commonutils import download_image
+from database import DatabaseItem
 
-class Video:
+class Video(DatabaseItem):
     """Representation of an YouTube video."""
 
     def __init__(self, channel, video_id, title, description, published_date,
                  duration):
+        super().__init__('videos')
+
         self.video_id = video_id
         self.channel = channel
         self.title = title
@@ -24,13 +27,28 @@ class Video:
 
         self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
 
+    def save(self):
+        self._commit({
+            'vid': self.video_id,
+            'channel_cid': self.channel.channel_id,
+            'title': self.title,
+            'description': self.description,
+            'published_date': self.published_date.strftime('%Y-%m-%d %H:%M:%S'),
+            'duration': self.duration
+        })
+
+    def exists(self):
+        return self._check_exists('vid', self.video_id)
+
     @staticmethod
     def import_from_dump(channel, video):
         """Imports data from a JSON object inside of a dump made with ytdump."""
         self = Video(channel, video['resourceId']['videoId'],
                      video['title'], video['description'],
                      datetime.fromisoformat(video['publishedAt']), None)
-        # TODO: Save the video to the database.
+
+        # Save the video to the database.
+        self.save()
 
         # Download the thumbnail.
         self._fetch_thumbnail(video['thumbnails'])

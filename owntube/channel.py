@@ -2,14 +2,16 @@
 
 import json
 
+from os.path import abspath, dirname
+
 import requests
 from requests.exceptions import HTTPError
 
-from os.path import abspath, dirname
 from lxml import etree
 from sty import fg, ef
 
 from commonutils import download_image
+from database import DatabaseItem
 from video import Video
 
 class YouTubeRSS:
@@ -34,21 +36,32 @@ class YouTubeRSS:
 
         return etree.fromstring(bytes(req.text, encoding='utf-8'))
 
-class Channel:
+class Channel(DatabaseItem):
     """Representation of an YouTube channel."""
 
     def __init__(self, channel_id, name, description):
+        super().__init__('channels')
+
         self.channel_id = channel_id
         self.name = name
         self.description = description
 
         self._avatar_dir = dirname(abspath(__file__)) + '/static/avatars'
 
+    def save(self):
+        self._commit({
+            'cid': self.channel_id,
+            'name': self.name,
+            'description': self.description
+        })
+
+    def exists(self):
+        return self._check_exists('cid', self.channel_id)
+
     @staticmethod
     def import_from_dump(fname):
         """Imports data from a JSON dump and saves it to the database."""
         # Load the JSON dump.
-        channel = None
         with open(fname, 'r') as fh:
             channel = json.load(fh)
 
@@ -56,7 +69,9 @@ class Channel:
         self = Channel(channel['resourceId']['channelId'], channel['title'],
                        channel['description'])
         print(f'Importing channel {fg.yellow}{self.name}{fg.rs}...')
-        # TODO: Save the channel to the database.
+
+        # Save the channel to the database.
+        self.save()
 
         # Download the thumbnail.
         self._fetch_avatar(channel['thumbnails'])
@@ -81,7 +96,3 @@ class Channel:
         except HTTPError as err:
             print(f'{fg.red}Error: Failed to fetch avatar from {url}\n'
                   f'{err}{fg.rs}')
-
-if __name__ == '__main__':
-    channel = Channel.import_from_dump(
-        'dump/NCommander_UCWyrVfwRL-2DOkzsqrbjo5Q.json')
