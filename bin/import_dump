@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+"""Imports a YouTube subscriptions dump into the system."""
+
+from os.path import abspath, dirname
+from glob import glob
+
+from owntube.channel import Channel
+
+def main():
+    dump_dir = dirname(dirname(abspath(__file__))) + '/dump'
+    for dump_file in glob(f'{dump_dir}/*.json'):
+        Channel.import_from_dump(dump_file)
+
+if __name__ == '__main__':
+    main()
