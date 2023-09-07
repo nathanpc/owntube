@@ -3,6 +3,7 @@
 
 from os.path import abspath, dirname
 
+import mariadb
 import requests
 import yaml
 
@@ -18,6 +19,22 @@ def read_config(path = None):
             read_config.config = yaml.safe_load(fh)
 
     return read_config.config
+
+def db_connect():
+    """Connects to the database using the project default configuration file."""
+    config = read_config()
+
+    # Check if we have already cached the database connection.
+    if not hasattr(db_connect, 'conn'):
+        db_connect.conn = mariadb.connect(
+            user=config['db']['user'],
+            password=config['db']['password'],
+            host=config['db']['host'],
+            port=config['db']['port'],
+            database=config['db']['database'])
+        db_connect.conn.autocommit = True
+
+    return db_connect.conn
 
 def download_image(url, path):
     """Downloads an image from an URL to the specified path."""
