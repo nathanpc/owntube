@@ -22,11 +22,13 @@ CREATE TABLE videos(
 	description		TEXT			DEFAULT "",
 	published_date	DATETIME		NOT NULL,
 	duration		INT(11)			NULL,
+	width			SMALLINT		NULL,
+	height			SMALLINT		NULL,
+	fps				TINYINT			NULL,
 
 	INDEX (title),
 	FULLTEXT KEY (description),
 
-	FOREIGN KEY (channel_cid)
-		REFERENCES channels (cid)
+	FOREIGN KEY (channel_cid) REFERENCES channels (cid)
 		ON DELETE CASCADE ON UPDATE CASCADE
 );

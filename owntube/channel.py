@@ -12,7 +12,7 @@ from sty import fg, ef
 
 from commonutils import download_image
 from database import DatabaseItem
-from video import Video
+import video
 
 class YouTubeRSS:
     """YouTube channel RSS feed utility."""
@@ -39,7 +39,7 @@ class YouTubeRSS:
 class Channel(DatabaseItem):
     """Representation of an YouTube channel."""
 
-    def __init__(self, channel_id, name, description):
+    def __init__(self, channel_id = None, name = None, description = None):
         super().__init__('channels')
 
         self.channel_id = channel_id
@@ -82,7 +82,7 @@ class Channel(DatabaseItem):
         for video_dump in channel['videos']:
             print(f'[{fg.blue}{index}/{total}{fg.rs}] Importing video '
                   f'{ef.italic}{video_dump["title"]}{ef.rs}')
-            Video.import_from_dump(self, video_dump)
+            video.Video.import_from_dump(self, video_dump)
             index += 1
 
         return self

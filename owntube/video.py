@@ -10,12 +10,14 @@ from sty import fg
 
 from commonutils import download_image
 from database import DatabaseItem
+import channel
 
 class Video(DatabaseItem):
     """Representation of an YouTube video."""
 
-    def __init__(self, channel, video_id, title, description, published_date,
-                 duration):
+    def __init__(self, channel = None, video_id = None, title = None,
+                 description = None, published_date = None, duration = None,
+                 width = None, height = None, fps = None):
         super().__init__('videos')
 
         self.video_id = video_id
@@ -24,6 +26,9 @@ class Video(DatabaseItem):
         self.description = description
         self.published_date = published_date
         self.duration = duration
+        self.width = width
+        self.height = height
+        self.fps = fps
 
         self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
 
@@ -34,7 +39,10 @@ class Video(DatabaseItem):
             'title': self.title,
             'description': self.description,
             'published_date': self.published_date.strftime('%Y-%m-%d %H:%M:%S'),
-            'duration': self.duration
+            'duration': self.duration,
+            'width': self.width,
+            'height': self.height,
+            'fps': self.fps
         })
 
     def exists(self):
