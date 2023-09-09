@@ -3,6 +3,9 @@
 from os.path import abspath, dirname
 from datetime import datetime
 
+from yt_dlp import YoutubeDL
+
+import json
 import requests
 from requests.exceptions import HTTPError
 
@@ -18,7 +21,7 @@ class Video(DatabaseItem):
 
     def __init__(self, channel = None, video_id = None, title = None,
                  description = None, published_date = None, duration = None,
-                 width = None, height = None, fps = None):
+                 width = None, height = None, fps = None, chapters = None):
         super().__init__('videos')
 
         self.video_id = video_id
@@ -30,6 +33,7 @@ class Video(DatabaseItem):
         self.width = width
         self.height = height
         self.fps = fps
+        self.chapters = chapters
 
         self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
 
@@ -52,6 +56,11 @@ class Video(DatabaseItem):
         self.width = row[6]
         self.height = row[7]
         self.fps = row[8]
+        self.chapters = json.loads(row[9])
+
+        # Fetch additional metadata if needed.
+        if self.height is None:
+            self._fetch_metadata()
 
         return self
 
@@ -65,7 +74,8 @@ class Video(DatabaseItem):
             'duration': self.duration,
             'width': self.width,
             'height': self.height,
-            'fps': self.fps
+            'fps': self.fps,
+            'chapters': json.dumps(self.chapters)
         })
 
     def exists(self):
@@ -104,3 +114,19 @@ class Video(DatabaseItem):
         except HTTPError as err:
             print(f'{fg.red}Error: Failed to fetch video thumbnail from {url}\n'
                   f'{err}{fg.rs}')
+
+    def _fetch_metadata(self):
+        """Fetches extra metadata and saves it to the database."""
+        url = f'https://www.youtube.com/watch?v={self.video_id}'
+        with YoutubeDL({}) as ydl:
+            info = ydl.sanitize_info(ydl.extract_info(url, download=False))
+
+            # Populate ourselves with the extra metadata.
+            self.duration = info['duration']
+            self.width = info['width']
+            self.height = info['height']
+            self.fps = info['fps']
+            self.chapters = info['chapters']
+
+            # Commit the changes.
+            self.save()

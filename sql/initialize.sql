@@ -25,6 +25,7 @@ CREATE TABLE videos(
 	width			SMALLINT		NULL,
 	height			SMALLINT		NULL,
 	fps				TINYINT			NULL,
+	chapters		JSON			NULL,
 
 	INDEX (title),
 	FULLTEXT KEY (description),
