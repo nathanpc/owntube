@@ -12,6 +12,7 @@ from sty import fg, ef
 
 from commonutils import download_image
 from database import DatabaseItem
+from exceptions import ChannelNotFound, SubscriptionFeedFetchError
 import video
 
 class YouTubeRSS:
@@ -32,7 +33,7 @@ class YouTubeRSS:
         """Fetches the RSS feed of the channel."""
         req = requests.get(self.CHANNEL_RSS_BASE_URL + self.channel_id)
         if req.status_code != 200:
-            raise Exception('Failed to fetch channel\'s RSS feed')
+            raise SubscriptionFeedFetchError()
 
         return etree.fromstring(bytes(req.text, encoding='utf-8'))
 
@@ -47,6 +48,19 @@ class Channel(DatabaseItem):
         self.description = description
 
         self._avatar_dir = dirname(abspath(__file__)) + '/static/avatars'
+
+    def from_id(self, id):
+        # Fetch database row.
+        row = self._fetch_by_id('cid', id)
+        if row is None:
+            raise ChannelNotFound()
+
+        # Populate ourselves.
+        self.channel_id = row[0]
+        self.name = row[1]
+        self.description = row[2]
+
+        return self
 
     def save(self):
         self._commit({

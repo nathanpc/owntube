@@ -10,6 +10,7 @@ from sty import fg
 
 from commonutils import download_image
 from database import DatabaseItem
+from exceptions import VideoNotFound
 import channel
 
 class Video(DatabaseItem):
@@ -31,6 +32,28 @@ class Video(DatabaseItem):
         self.fps = fps
 
         self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
+
+    def from_id(self, id, chan = None):
+        # Fetch database row.
+        row = self._fetch_by_id('vid', id)
+        if row is None:
+            raise VideoNotFound()
+
+        # Get the channel if needed.
+        if chan is None:
+            self.channel = channel.Channel().from_id(row[1])
+
+        # Populate ourselves.
+        self.video_id = row[0]
+        self.title = row[2]
+        self.description = row[3]
+        self.published_date = row[4]
+        self.duration = row[5]
+        self.width = row[6]
+        self.height = row[7]
+        self.fps = row[8]
+
+        return self
 
     def save(self):
         self._commit({

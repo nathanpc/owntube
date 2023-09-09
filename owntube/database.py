@@ -13,6 +13,16 @@ class DatabaseItem(ABC):
         self.table = table
 
     @abstractmethod
+    def from_id(self, id):
+        """Fetches an object from the database via its ID."""
+
+    def _fetch_by_id(self, column, id):
+        """Fetches an object from the database via its ID column."""
+        with self.conn.cursor() as cur:
+            cur.execute(f'SELECT * FROM {self.table} WHERE {column} = ?', [id])
+            return cur.fetchone()
+
+    @abstractmethod
     def save(self):
         """Commits changes made to the object to the database."""
 
@@ -38,5 +48,5 @@ class DatabaseItem(ABC):
         """Checks if an item exists based on a column and its value."""
         with self.conn.cursor() as cur:
             cur.execute(f'SELECT EXISTS(SELECT {column} FROM {self.table} '
-                        f'WHERE {column} = ?)', value)
+                        f'WHERE {column} = ?)', [value])
             return cur.fetchone()[0] == 0
