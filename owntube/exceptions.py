@@ -12,3 +12,8 @@ class VideoNotFound(Exception):
 class SubscriptionFeedFetchError(Exception):
     def __init__(self, message = "An error occurred while fetching the subscriptions"):
         super().__init__(message)
+
+class VideoDownloadError(Exception):
+    def __init__(self, message = "An error occurred while downloading the video", data = None):
+        super().__init__(message)
+        self.data = data

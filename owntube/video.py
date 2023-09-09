@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 from os.path import abspath, dirname
 from datetime import datetime
 
@@ -13,7 +14,8 @@ from sty import fg
 
 from commonutils import download_image
 from database import DatabaseItem
-from exceptions import VideoNotFound
+from loggers import ConsoleLogger
+from exceptions import VideoNotFound, VideoDownloadError
 import channel
 
 class Video(DatabaseItem):
@@ -36,6 +38,7 @@ class Video(DatabaseItem):
         self.chapters = chapters
 
         self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
+        self._video_dir = dirname(abspath(__file__)) + '/static/videos'
 
     def from_id(self, id, chan = None):
         # Fetch database row.
@@ -56,7 +59,7 @@ class Video(DatabaseItem):
         self.width = row[6]
         self.height = row[7]
         self.fps = row[8]
-        self.chapters = json.loads(row[9])
+        self.chapters = None if (row[9] is None) else json.loads(row[9])
 
         # Fetch additional metadata if needed.
         if self.height is None:
@@ -75,11 +78,34 @@ class Video(DatabaseItem):
             'width': self.width,
             'height': self.height,
             'fps': self.fps,
-            'chapters': json.dumps(self.chapters)
+            'chapters': None if (self.chapters is None) else
+                json.dumps(self.chapters)
         })
 
     def exists(self):
         return self._check_exists('vid', self.video_id)
+
+    def download(self, height, logger = ConsoleLogger()):
+        """Downloads a video in a specific resolution."""
+        # Setup the options for the download.
+        opts = {
+            'outtmpl': {
+                'default': f'{self._video_dir}/{self.video_id}_{height}.mp4'
+            },
+            'format': f'bestvideo[ext=mp4][height<=?{height}]+'
+                       'bestaudio[ext=m4a]/best',
+            'format_sort': ['vcodec:h264'],
+            'extract_flat': 'discard_in_playlist',
+            'fragment_retries': 10,
+            'ignoreerrors': 'only_download',
+            'retries': 10,
+            'logger': logger,
+            'progress_hooks': [self._download_hook]
+        }
+
+        # Perform the download.
+        with YoutubeDL(opts) as ydl:
+            ydl.download(self.url)
 
     @staticmethod
     def import_from_dump(channel, video):
@@ -95,6 +121,10 @@ class Video(DatabaseItem):
         self._fetch_thumbnail(video['thumbnails'])
 
         return self
+
+    @property
+    def url(self):
+        return f'https://www.youtube.com/watch?v={self.video_id}'
 
     def _fetch_thumbnail(self, thumbs):
         """Downloads the video's thumbnail from the thumbnails list."""
@@ -117,9 +147,8 @@ class Video(DatabaseItem):
 
     def _fetch_metadata(self):
         """Fetches extra metadata and saves it to the database."""
-        url = f'https://www.youtube.com/watch?v={self.video_id}'
         with YoutubeDL({}) as ydl:
-            info = ydl.sanitize_info(ydl.extract_info(url, download=False))
+            info = ydl.sanitize_info(ydl.extract_info(self.url, download=False))
 
             # Populate ourselves with the extra metadata.
             self.duration = info['duration']
@@ -130,3 +159,74 @@ class Video(DatabaseItem):
 
             # Commit the changes.
             self.save()
+
+    def _download_hook(self, data):
+        """Responds to events fired by a YoutubeDL download."""
+        if data['status'] == 'finished':
+            info = data['info_dict']
+
+            print(f'{fg.green}Downloaded {data["filename"]}{fg.rs}')
+            if info['ext'] == 'mp4':
+                # Save information about the downloaded video to the database.
+                download = DownloadedVideo(
+                    None, self, info['width'], info['height'], info['fps'],
+                    data['total_bytes'], info['ext'])
+                download.save()
+        elif data['status'] == 'error':
+            raise VideoDownloadError(data = data)
+
+class DownloadedVideo(DatabaseItem):
+    """Representation of a local video."""
+
+    def __init__(self, id = None, video = None, width = None, height = None,
+                 fps = None, filesize = None, extension = None):
+        super().__init__('downloaded_videos')
+
+        self.id = id
+        self.video = video
+        self.width = width
+        self.height = height
+        self.fps = fps
+        self.filesize = filesize
+        self.extension = extension
+
+        self._video_dir = dirname(abspath(__file__)) + '/static/videos'
+
+    def from_id(self, id, video = None):
+        # Fetch database row.
+        row = self._fetch_by_id('id', id)
+        if row is None:
+            raise VideoNotFound("Downloaded video wasn't found")
+
+        # Get the video if needed.
+        if video is None:
+            self.video = Video().from_id(row[1])
+
+        # Populate ourselves.
+        self.id = row[0]
+        self.width = row[2]
+        self.height = row[3]
+        self.fps = row[4]
+        self.filesize = row[5]
+        self.extension = row[6]
+
+        return self
+
+    def save(self):
+        self._commit({
+            'id': self.id,
+            'vid': self.video.video_id,
+            'width': self.width,
+            'height': self.height,
+            'fps': self.fps,
+            'filesize': self.filesize,
+            'extension': self.extension
+        })
+
+    def exists(self):
+        return self._check_exists('id', self.id)
+    
+    @property
+    def path(self):
+        """Path to where the video is located at."""
+        return f'{self._video_dir}/{self.video.video_id}_{self.height}.mp4'
