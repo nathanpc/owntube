@@ -7,7 +7,7 @@ from owntube.video import Video, DownloadedVideo
 from owntube.exceptions import VideoNotFound, OwnTubeBaseException
 
 # Create the view blueprint.
-bp = Blueprint('auth', __name__, url_prefix='/video')
+bp = Blueprint('video', __name__, url_prefix='/video')
 
 @bp.route('/<id>')
 def show(id):
