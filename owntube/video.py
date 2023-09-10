@@ -15,10 +15,11 @@ from sty import fg
 from owntube.utils.commonutils import download_image
 from owntube.utils.database import DatabaseItem
 from owntube.utils.loggers import ConsoleLogger
+from owntube.utils.renderable import Renderable
 from owntube.exceptions import VideoNotFound, VideoDownloadError
-import owntube.models.channel as channel
+import owntube.channel as channel
 
-class Video(DatabaseItem):
+class Video(DatabaseItem, Renderable):
     """Representation of an YouTube video."""
 
     def __init__(self, channel = None, video_id = None, title = None,
@@ -81,6 +82,26 @@ class Video(DatabaseItem):
             'chapters': None if (self.chapters is None) else
                 json.dumps(self.chapters)
         })
+
+    def as_dict(self, expand=None):
+        # Build up the base structure.
+        d = {
+            'id': self.video_id,
+            'title': self.title,
+            'description': self.description,
+            'published_date': self.published_date,
+            'duration': self.duration,
+            'width': self.width,
+            'height': self.height,
+            'fps': self.fps,
+            'chapters': self.chapters
+        }
+
+        # Expand the channel?
+        if expand is not None:
+            d['channel'] = self.channel.as_dict()
+
+        return d
 
     def exists(self):
         return self._check_exists('vid', self.video_id)

@@ -12,8 +12,9 @@ from sty import fg, ef
 
 from owntube.utils.commonutils import download_image
 from owntube.utils.database import DatabaseItem
+from owntube.utils.renderable import Renderable
 from owntube.exceptions import ChannelNotFound, SubscriptionFeedFetchError
-import owntube.models.video as video
+import owntube.video as video
 
 class YouTubeRSS:
     """YouTube channel RSS feed utility."""
@@ -37,7 +38,7 @@ class YouTubeRSS:
 
         return etree.fromstring(bytes(req.text, encoding='utf-8'))
 
-class Channel(DatabaseItem):
+class Channel(DatabaseItem, Renderable):
     """Representation of an YouTube channel."""
 
     def __init__(self, channel_id = None, name = None, description = None):
@@ -68,6 +69,15 @@ class Channel(DatabaseItem):
             'name': self.name,
             'description': self.description
         })
+
+    def as_dict(self, expand=None):
+        d = {
+            'id': self.channel_id,
+            'name': self.name,
+            'description': self.description
+        }
+
+        return d
 
     def exists(self):
         return self._check_exists('cid', self.channel_id)
