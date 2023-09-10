@@ -76,6 +76,18 @@ class Channel(DatabaseItem, Renderable):
     def exists(self):
         return self._check_exists('cid', self.channel_id)
 
+    def list(self):
+        """Gets a list of the channels in the database."""
+        channels = []
+
+        # Get all the channels.
+        with self.conn.cursor() as cur:
+            cur.execute('SELECT * FROM channels')
+            for row in cur.fetchall():
+                channels.append(Channel()._from_row(row))
+
+        return channels
+
     def videos(self, count=None, since=None):
         """Gets the lastest videos or all the videos since a date."""
         videos = []
@@ -102,8 +114,7 @@ class Channel(DatabaseItem, Renderable):
 
             # Get our videos.
             cur.execute(stmt, params)
-            rows = cur.fetchall()
-            for row in rows:
+            for row in cur.fetchall():
                 videos.append(video.Video()._from_row(row, chan=self))
 
         return videos

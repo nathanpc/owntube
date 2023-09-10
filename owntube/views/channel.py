@@ -10,6 +10,16 @@ from owntube.exceptions import ChannelNotFound, OwnTubeBaseException
 # Create the view blueprint.
 bp = Blueprint('channel', __name__, url_prefix='/channel')
 
+@bp.route('/')
+def list_channels():
+    """Lists all of the channels."""
+    # Generate channel list.
+    resp = { 'channels': [] }
+    for channel in Channel().list():
+        resp['channels'].append(channel.__dict__(expand=None))
+
+    return resp
+
 @bp.route('/<id>')
 def show(id):
     """Gets detailed information about the channel."""
