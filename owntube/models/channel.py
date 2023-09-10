@@ -10,10 +10,10 @@ from requests.exceptions import HTTPError
 from lxml import etree
 from sty import fg, ef
 
-from commonutils import download_image
-from database import DatabaseItem
-from exceptions import ChannelNotFound, SubscriptionFeedFetchError
-import video
+from owntube.utils.commonutils import download_image
+from owntube.utils.database import DatabaseItem
+from owntube.exceptions import ChannelNotFound, SubscriptionFeedFetchError
+import owntube.models.video as video
 
 class YouTubeRSS:
     """YouTube channel RSS feed utility."""

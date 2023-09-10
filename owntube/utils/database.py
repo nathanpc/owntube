@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 
-import mariadb
 from abc import ABC, abstractmethod
 
-from commonutils import db_connect
+from owntube.utils.commonutils import db_connect
 
 class DatabaseItem(ABC):
     """Abstracts the relationship between objects and database items."""
 
-    def __init__(self, table, is_new = True):
+    def __init__(self, table):
         self.conn = db_connect()
         self.table = table
 

@@ -12,11 +12,11 @@ from requests.exceptions import HTTPError
 
 from sty import fg
 
-from commonutils import download_image
-from database import DatabaseItem
-from loggers import ConsoleLogger
-from exceptions import VideoNotFound, VideoDownloadError
-import channel
+from owntube.utils.commonutils import download_image
+from owntube.utils.database import DatabaseItem
+from owntube.utils.loggers import ConsoleLogger
+from owntube.exceptions import VideoNotFound, VideoDownloadError
+import owntube.models.channel as channel
 
 class Video(DatabaseItem):
     """Representation of an YouTube video."""
@@ -225,7 +225,7 @@ class DownloadedVideo(DatabaseItem):
 
     def exists(self):
         return self._check_exists('id', self.id)
-    
+
     @property
     def path(self):
         """Path to where the video is located at."""
