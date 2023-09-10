@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import datetime
 import json
 
 from os.path import abspath, dirname
@@ -10,7 +11,7 @@ from requests.exceptions import HTTPError
 from lxml import etree
 from sty import fg, ef
 
-from owntube.utils.commonutils import download_image
+from owntube.utils.commonutils import download_image, read_config
 from owntube.utils.database import DatabaseItem
 from owntube.utils.renderable import Renderable
 from owntube.exceptions import ChannelNotFound, SubscriptionFeedFetchError
@@ -74,6 +75,38 @@ class Channel(DatabaseItem, Renderable):
 
     def exists(self):
         return self._check_exists('cid', self.channel_id)
+
+    def videos(self, count=None, since=None):
+        """Gets the lastest videos or all the videos since a date."""
+        videos = []
+
+        # Ensure the user gets something.
+        if count is None and since is None:
+            count = read_config()['settings']['video_count']
+
+        # Build up statement depending on our constraints.
+        stmt = 'SELECT * FROM videos WHERE channel_cid = ? '
+        if since is not None:
+            stmt += 'AND published_date >= ? '
+        stmt += 'ORDER BY published_date DESC '
+        if count is not None:
+            stmt += 'LIMIT ? '
+
+        with self.conn.cursor() as cur:
+            # Setup our statement parameters.
+            params = [ self.channel_id ]
+            if since is not None:
+                params.append(since.strftime('%Y-%m-%d %H:%M:%S'))
+            if count is not None:
+                params.append(count)
+
+            # Get our videos.
+            cur.execute(stmt, params)
+            rows = cur.fetchall()
+            for row in rows:
+                videos.append(video.Video()._from_row(row, chan=self))
+
+        return videos
 
     @property
     @staticmethod

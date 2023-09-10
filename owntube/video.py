@@ -12,7 +12,7 @@ from requests.exceptions import HTTPError
 
 from sty import fg
 
-from owntube.utils.commonutils import download_image
+from owntube.utils.commonutils import download_image, read_config
 from owntube.utils.database import DatabaseItem
 from owntube.utils.loggers import ConsoleLogger
 from owntube.utils.renderable import Renderable
@@ -83,6 +83,38 @@ class Video(DatabaseItem, Renderable):
 
     def exists(self):
         return self._check_exists('vid', self.video_id)
+
+    def list(self, count=None, since=None):
+        """Gets the lastest videos or all the videos since a date."""
+        videos = []
+
+        # Ensure the user gets something.
+        if count is None and since is None:
+            count = read_config()['settings']['video_count']
+
+        # Build up statement depending on our constraints.
+        stmt = 'SELECT * FROM videos '
+        if since is not None:
+            stmt += 'WHERE published_date >= ? '
+        stmt += 'ORDER BY published_date DESC '
+        if count is not None:
+            stmt += 'LIMIT ? '
+
+        with self.conn.cursor() as cur:
+            # Setup our statement parameters.
+            params = []
+            if since is not None:
+                params.append(since.strftime('%Y-%m-%d %H:%M:%S'))
+            if count is not None:
+                params.append(count)
+
+            # Get our videos.
+            cur.execute(stmt, params)
+            rows = cur.fetchall()
+            for row in rows:
+                videos.append(Video()._from_row(row))
+
+        return videos
 
     def download(self, height, logger = ConsoleLogger()):
         """Downloads a video in a specific resolution."""
