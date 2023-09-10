@@ -10,9 +10,10 @@ def create_app():
     app = Flask(__name__)
 
     # Import views.
-    from owntube.views import video
+    from owntube.views import channel, video
 
     # Register blueprints.
+    app.register_blueprint(channel.bp)
     app.register_blueprint(video.bp)
 
     return app
