@@ -4,7 +4,7 @@
 from flask import Blueprint
 
 from owntube.video import Video, DownloadedVideo
-from owntube.exceptions import VideoNotFound, VideoDownloadError
+from owntube.exceptions import VideoNotFound, OwnTubeBaseException
 
 # Create the view blueprint.
 bp = Blueprint('auth', __name__, url_prefix='/video')
@@ -18,6 +18,6 @@ def show(id):
 def handle_video_not_found(err):
     return { 'error': err.__dict__() }, 404
 
-@bp.errorhandler(VideoDownloadError)
-def handle_video_download_error(err):
+@bp.errorhandler(OwnTubeBaseException)
+def handle_base_exception(err):
     return { 'error': err.__dict__() }, 500
