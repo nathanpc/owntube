@@ -64,26 +64,7 @@ class Video(DatabaseItem, Renderable):
         if row is None:
             raise VideoNotFound()
 
-        # Get the channel if needed.
-        if chan is None:
-            self.channel = channel.Channel().from_id(row[1])
-
-        # Populate ourselves.
-        self.video_id = row[0]
-        self.title = row[2]
-        self.description = row[3]
-        self.published_date = row[4]
-        self.duration = row[5]
-        self.width = row[6]
-        self.height = row[7]
-        self.fps = row[8]
-        self.chapters = None if (row[9] is None) else json.loads(row[9])
-
-        # Fetch additional metadata if needed.
-        if self.height is None:
-            self._fetch_metadata()
-
-        return self
+        return self._from_row(row, chan)
 
     def save(self):
         self._commit({
@@ -206,6 +187,28 @@ class Video(DatabaseItem, Renderable):
         elif data['status'] == 'error':
             raise VideoDownloadError(data = data)
 
+    def _from_row(self, row, chan = None):
+        # Get the channel if needed.
+        if chan is None:
+            self.channel = channel.Channel().from_id(row[1])
+
+        # Populate ourselves.
+        self.video_id = row[0]
+        self.title = row[2]
+        self.description = row[3]
+        self.published_date = row[4]
+        self.duration = row[5]
+        self.width = row[6]
+        self.height = row[7]
+        self.fps = row[8]
+        self.chapters = None if (row[9] is None) else json.loads(row[9])
+
+        # Fetch additional metadata if needed.
+        if self.height is None:
+            self._fetch_metadata()
+
+        return self
+
 class DownloadedVideo(DatabaseItem):
     """Representation of a local video."""
 
@@ -227,19 +230,7 @@ class DownloadedVideo(DatabaseItem):
         if row is None:
             raise VideoNotFound("Downloaded video wasn't found")
 
-        # Get the video if needed.
-        if video is None:
-            self.video = Video().from_id(row[1])
-
-        # Populate ourselves.
-        self.id = row[0]
-        self.width = row[2]
-        self.height = row[3]
-        self.fps = row[4]
-        self.filesize = row[5]
-        self.extension = row[6]
-
-        return self
+        return self._from_row(row, video)
 
     def save(self):
         self._commit({
@@ -259,3 +250,18 @@ class DownloadedVideo(DatabaseItem):
     def path(self):
         """Path to where the video is located at."""
         return f'{Video.video_dir}/{self.video.video_id}_{self.height}.mp4'
+
+    def _from_row(self, row, video = None):
+        # Get the video if needed.
+        if video is None:
+            self.video = Video().from_id(row[1])
+
+        # Populate ourselves.
+        self.id = row[0]
+        self.width = row[2]
+        self.height = row[3]
+        self.fps = row[4]
+        self.filesize = row[5]
+        self.extension = row[6]
+
+        return self

@@ -63,12 +63,7 @@ class Channel(DatabaseItem, Renderable):
         if row is None:
             raise ChannelNotFound()
 
-        # Populate ourselves.
-        self.channel_id = row[0]
-        self.name = row[1]
-        self.description = row[2]
-
-        return self
+        return self._from_row(row)
 
     def save(self):
         self._commit({
@@ -124,3 +119,10 @@ class Channel(DatabaseItem, Renderable):
         except HTTPError as err:
             print(f'{fg.red}Error: Failed to fetch avatar from {url}\n'
                   f'{err}{fg.rs}')
+
+    def _from_row(self, row):
+        self.channel_id = row[0]
+        self.name = row[1]
+        self.description = row[2]
+
+        return self

@@ -15,6 +15,10 @@ class DatabaseItem(ABC):
     def from_id(self, id):
         """Fetches an object from the database via its ID."""
 
+    @abstractmethod
+    def _from_row(self, row):
+        """Populates an object using a database row."""
+
     def _fetch_by_id(self, column, id):
         """Fetches an object from the database via its ID column."""
         with self.conn.cursor() as cur:
