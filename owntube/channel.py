@@ -48,6 +48,14 @@ class Channel(DatabaseItem, Renderable):
         self.name = name
         self.description = description
 
+    def __dict__(self, expand=None):
+        d = {
+            'id': self.channel_id,
+            'name': self.name,
+            'description': self.description
+        }
+
+        return d
 
     def from_id(self, id):
         # Fetch database row.
@@ -68,15 +76,6 @@ class Channel(DatabaseItem, Renderable):
             'name': self.name,
             'description': self.description
         })
-
-    def as_dict(self, expand=None):
-        d = {
-            'id': self.channel_id,
-            'name': self.name,
-            'description': self.description
-        }
-
-        return d
 
     def exists(self):
         return self._check_exists('cid', self.channel_id)

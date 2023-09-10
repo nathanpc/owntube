@@ -38,6 +38,25 @@ class Video(DatabaseItem, Renderable):
         self.fps = fps
         self.chapters = chapters
 
+    def __dict__(self, expand=None):
+        # Build up the base structure.
+        d = {
+            'id': self.video_id,
+            'title': self.title,
+            'description': self.description,
+            'published_date': self.published_date,
+            'duration': self.duration,
+            'width': self.width,
+            'height': self.height,
+            'fps': self.fps,
+            'chapters': self.chapters
+        }
+
+        # Expand the channel?
+        if expand is not None:
+            d['channel'] = self.channel.__dict__()
+
+        return d
 
     def from_id(self, id, chan = None):
         # Fetch database row.
@@ -80,26 +99,6 @@ class Video(DatabaseItem, Renderable):
             'chapters': None if (self.chapters is None) else
                 json.dumps(self.chapters)
         })
-
-    def as_dict(self, expand=None):
-        # Build up the base structure.
-        d = {
-            'id': self.video_id,
-            'title': self.title,
-            'description': self.description,
-            'published_date': self.published_date,
-            'duration': self.duration,
-            'width': self.width,
-            'height': self.height,
-            'fps': self.fps,
-            'chapters': self.chapters
-        }
-
-        # Expand the channel?
-        if expand is not None:
-            d['channel'] = self.channel.as_dict()
-
-        return d
 
     def exists(self):
         return self._check_exists('vid', self.video_id)
