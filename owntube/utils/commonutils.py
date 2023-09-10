@@ -11,7 +11,7 @@ def read_config(path = None):
     """Reads the default configuration file or a specific one."""
     # Use the default path if one wasn't provided.
     if path is None:
-        path = dirname(dirname(abspath(__file__))) + '/config.yml'
+        path = dirname(dirname(dirname(abspath(__file__)))) + '/config.yml'
 
     # Check if we have already cached the configuration file.
     if not hasattr(read_config, 'config'):

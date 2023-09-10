@@ -38,8 +38,6 @@ class Video(DatabaseItem, Renderable):
         self.fps = fps
         self.chapters = chapters
 
-        self._thumbs_dir = dirname(abspath(__file__)) + '/static/thumbnails'
-        self._video_dir = dirname(abspath(__file__)) + '/static/videos'
 
     def from_id(self, id, chan = None):
         # Fetch database row.
@@ -111,7 +109,7 @@ class Video(DatabaseItem, Renderable):
         # Setup the options for the download.
         opts = {
             'outtmpl': {
-                'default': f'{self._video_dir}/{self.video_id}_{height}.mp4'
+                'default': f'{self.video_dir}/{self.video_id}_{height}.mp4'
             },
             'format': f'bestvideo[ext=mp4][height<=?{height}]+'
                        'bestaudio[ext=m4a]/best',
@@ -128,6 +126,23 @@ class Video(DatabaseItem, Renderable):
         with YoutubeDL(opts) as ydl:
             ydl.download(self.url)
 
+    @property
+    def url(self):
+        """Original YouTube URL to this video."""
+        return f'https://www.youtube.com/watch?v={self.video_id}'
+
+    @property
+    @staticmethod
+    def thumbs_dir():
+        """Location of the thumbnails directory."""
+        return dirname(dirname(abspath(__file__))) + '/static/thumbnails'
+
+    @property
+    @staticmethod
+    def video_dir():
+        """Location of the video files directory."""
+        return dirname(dirname(abspath(__file__))) + '/static/videos'
+
     @staticmethod
     def import_from_dump(channel, video):
         """Imports data from a JSON object inside of a dump made with ytdump."""
@@ -143,10 +158,6 @@ class Video(DatabaseItem, Renderable):
 
         return self
 
-    @property
-    def url(self):
-        return f'https://www.youtube.com/watch?v={self.video_id}'
-
     def _fetch_thumbnail(self, thumbs):
         """Downloads the video's thumbnail from the thumbnails list."""
         url = None
@@ -161,7 +172,7 @@ class Video(DatabaseItem, Renderable):
 
         # Actually download the thumbnail.
         try:
-            download_image(url, f'{self._thumbs_dir}/{self.video_id}.jpg')
+            download_image(url, f'{self.thumbs_dir}/{self.video_id}.jpg')
         except HTTPError as err:
             print(f'{fg.red}Error: Failed to fetch video thumbnail from {url}\n'
                   f'{err}{fg.rs}')
@@ -211,8 +222,6 @@ class DownloadedVideo(DatabaseItem):
         self.filesize = filesize
         self.extension = extension
 
-        self._video_dir = dirname(abspath(__file__)) + '/static/videos'
-
     def from_id(self, id, video = None):
         # Fetch database row.
         row = self._fetch_by_id('id', id)
@@ -250,4 +259,4 @@ class DownloadedVideo(DatabaseItem):
     @property
     def path(self):
         """Path to where the video is located at."""
-        return f'{self._video_dir}/{self.video.video_id}_{self.height}.mp4'
+        return f'{Video.video_dir}/{self.video.video_id}_{self.height}.mp4'

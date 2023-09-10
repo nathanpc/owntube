@@ -48,7 +48,6 @@ class Channel(DatabaseItem, Renderable):
         self.name = name
         self.description = description
 
-        self._avatar_dir = dirname(abspath(__file__)) + '/static/avatars'
 
     def from_id(self, id):
         # Fetch database row.
@@ -81,6 +80,12 @@ class Channel(DatabaseItem, Renderable):
 
     def exists(self):
         return self._check_exists('cid', self.channel_id)
+
+    @property
+    @staticmethod
+    def avatar_dir():
+        """Location of the channel avatar directory."""
+        return dirname(dirname(abspath(__file__))) + '/static/avatars'
 
     @staticmethod
     def import_from_dump(fname):
@@ -116,7 +121,7 @@ class Channel(DatabaseItem, Renderable):
         url = thumbs['high']['url']
 
         try:
-            download_image(url, f'{self._avatar_dir}/{self.channel_id}.jpg')
+            download_image(url, f'{self.avatar_dir}/{self.channel_id}.jpg')
         except HTTPError as err:
             print(f'{fg.red}Error: Failed to fetch avatar from {url}\n'
                   f'{err}{fg.rs}')
