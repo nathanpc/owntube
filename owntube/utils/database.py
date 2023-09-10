@@ -16,6 +16,10 @@ class DatabaseItem(ABC):
         """Fetches an object from the database via its ID."""
 
     @abstractmethod
+    def list(self):
+        """Gets a list of our objects from the database."""
+
+    @abstractmethod
     def _from_row(self, row):
         """Populates an object using a database row."""
 

@@ -110,8 +110,7 @@ class Video(DatabaseItem, Renderable):
 
             # Get our videos.
             cur.execute(stmt, params)
-            rows = cur.fetchall()
-            for row in rows:
+            for row in cur.fetchall():
                 videos.append(Video()._from_row(row))
 
         return videos
