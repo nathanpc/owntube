@@ -120,10 +120,9 @@ class Channel(DatabaseItem, Renderable):
         return videos
 
     @property
-    @staticmethod
-    def avatar_dir():
+    def avatar_dir(self):
         """Location of the channel avatar directory."""
-        return dirname(dirname(abspath(__file__))) + '/static/avatars'
+        return dirname(abspath(__file__)) + '/static/avatars'
 
     @staticmethod
     def import_from_dump(fname):

@@ -3,7 +3,10 @@
 
 from os.path import abspath, dirname
 from glob import glob
+import sys
 
+# Allow the import of modules from the parent folder.
+sys.path.append('../owntube')
 from owntube.channel import Channel
 
 def main():

@@ -144,15 +144,15 @@ class Video(DatabaseItem, Renderable):
 
     @property
     @staticmethod
-    def thumbs_dir():
+    def thumbs_dir(self):
         """Location of the thumbnails directory."""
-        return dirname(dirname(abspath(__file__))) + '/static/thumbnails'
+        return dirname(abspath(__file__)) + '/static/thumbnails'
 
     @property
     @staticmethod
-    def video_dir():
+    def video_dir(self):
         """Location of the video files directory."""
-        return dirname(dirname(abspath(__file__))) + '/static/videos'
+        return dirname(abspath(__file__)) + '/static/videos'
 
     @staticmethod
     def import_from_dump(channel, video):
