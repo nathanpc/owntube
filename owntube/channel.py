@@ -143,6 +143,8 @@ class Channel(DatabaseItem, Renderable):
         self._fetch_avatar(channel['thumbnails'])
 
         # Go through the videos and import them.
+        if channel['videos'] is None:
+            return self
         total = len(channel['videos'])
         index = 1
         for video_dump in channel['videos']:

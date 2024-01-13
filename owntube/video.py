@@ -70,7 +70,7 @@ class Video(DatabaseItem, Renderable):
         self._commit({
             'vid': self.video_id,
             'channel_cid': self.channel.channel_id,
-            'title': self.title,
+            'title': self.title[0:254],
             'description': self.description,
             'published_date': self.published_date.strftime('%Y-%m-%d %H:%M:%S'),
             'duration': self.duration,
