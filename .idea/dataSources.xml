@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="Local MariaDB" uuid="4dc0ad92-161c-47ae-a54d-6bd8974fce40">
-      <driver-ref>mariadb</driver-ref>
+    <data-source source="LOCAL" name="OwnTube MySQL" uuid="7cd188ec-44fb-4bbb-bdae-938374302e37">
+      <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
-      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mariadb://?localSocket=/opt/local/var/run/mariadb-10.11/mysqld.sock</jdbc-url>
+      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mysql://localhost:3306</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>

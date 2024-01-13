@@ -18,10 +18,10 @@ CREATE TABLE channels(
 CREATE TABLE videos(
 	vid				VARCHAR(11)		CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL PRIMARY KEY,
 	channel_cid		VARCHAR(30)		CHARACTER SET 'ascii' COLLATE 'ascii_bin' NOT NULL,
-	title			VARCHAR(100)	NOT NULL,
-	description		TEXT			DEFAULT "",
+	title			VARCHAR(255)	NOT NULL,
+	description		TEXT			NULL,
 	published_date	DATETIME		NOT NULL,
-	duration		INT(11)			NULL,
+	duration		INT				NULL,
 	width			SMALLINT		NULL,
 	height			SMALLINT		NULL,
 	fps				TINYINT			NULL,

@@ -3,7 +3,7 @@
 
 from os.path import abspath, dirname
 
-import mariadb
+import mysql.connector
 import requests
 import yaml
 
@@ -26,7 +26,7 @@ def db_connect():
 
     # Check if we have already cached the database connection.
     if not hasattr(db_connect, 'conn'):
-        db_connect.conn = mariadb.connect(
+        db_connect.conn = mysql.connector.connect(
             user=config['db']['user'],
             password=config['db']['password'],
             host=config['db']['host'],

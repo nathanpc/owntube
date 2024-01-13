@@ -26,7 +26,7 @@ class DatabaseItem(ABC):
     def _fetch_by_id(self, column, id):
         """Fetches an object from the database via its ID column."""
         with self.conn.cursor() as cur:
-            cur.execute(f'SELECT * FROM {self.table} WHERE {column} = ?', [id])
+            cur.execute(f'SELECT * FROM {self.table} WHERE {column} = %s', [id])
             return cur.fetchone()
 
     @abstractmethod
@@ -37,10 +37,10 @@ class DatabaseItem(ABC):
         """Inserts or updates a database item parameters automagically."""
         # Prepare the SQL statement.
         statement = f'INSERT INTO {self.table}({", ".join(params)}) VALUES ' \
-                    f'({"?, " * (len(params) - 1)}?) ON DUPLICATE KEY UPDATE '
+                    f'({"%s, " * (len(params) - 1)}?) ON DUPLICATE KEY UPDATE '
         for col in list(params)[:-1]:
-            statement += f'{col} = ?, '
-        statement += f'{list(params)[-1]} = ?'
+            statement += f'{col} = %s, '
+        statement += f'{list(params)[-1]} = %s'
 
         # Commit the changes to the database.
         with self.conn.cursor() as cur:
@@ -55,5 +55,5 @@ class DatabaseItem(ABC):
         """Checks if an item exists based on a column and its value."""
         with self.conn.cursor() as cur:
             cur.execute(f'SELECT EXISTS(SELECT {column} FROM {self.table} '
-                        f'WHERE {column} = ?)', [value])
+                        f'WHERE {column} = %s)', [value])
             return cur.fetchone()[0] == 0
