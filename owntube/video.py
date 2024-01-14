@@ -95,10 +95,10 @@ class Video(DatabaseItem, Renderable):
         # Build up statement depending on our constraints.
         stmt = 'SELECT * FROM videos '
         if since is not None:
-            stmt += 'WHERE published_date >= ? '
+            stmt += 'WHERE published_date >= %s '
         stmt += 'ORDER BY published_date DESC '
         if count is not None:
-            stmt += 'LIMIT ? '
+            stmt += 'LIMIT %s '
 
         with self.conn.cursor() as cur:
             # Setup our statement parameters.
