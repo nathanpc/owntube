@@ -44,6 +44,8 @@ db:
   host: 'localhost'
   port: 3306
   database: 'owntube'
+settings:
+  video_count: 20
 ```
 
 Now you should have your entire environment properly set up and ready to start
