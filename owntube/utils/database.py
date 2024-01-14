@@ -37,7 +37,7 @@ class DatabaseItem(ABC):
         """Inserts or updates a database item parameters automagically."""
         # Prepare the SQL statement.
         statement = f'INSERT INTO {self.table}({", ".join(params)}) VALUES ' \
-                    f'({"%s, " * (len(params) - 1)}?) ON DUPLICATE KEY UPDATE '
+                    f'({"%s, " * (len(params) - 1)}%s) ON DUPLICATE KEY UPDATE '
         for col in list(params)[:-1]:
             statement += f'{col} = %s, '
         statement += f'{list(params)[-1]} = %s'
