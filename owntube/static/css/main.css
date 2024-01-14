@@ -1,0 +1,200 @@
+/**
+ * main.css
+ * The main styling component of our web application.
+ *
+ * @author Nathan Campos <nathan@innoveworkshop.com>
+ */
+
+html {
+    background-color: #1e1f22;
+    color: #dfe1e5;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Helvetica Neue", Helvetica, Roboto, Ubuntu, Oxygen,
+        Cantarell, "Segoe UI", Tahoma, sans-serif;
+}
+
+/**
+ * Navigation Bar
+ */
+
+#navbar {
+    height: 40px;
+    background-color: #2b2d30;
+    border-bottom: #57585a 1px solid;
+}
+
+#navbar h1 {
+    height: 100%;
+    line-height: 40px;
+    font-size: 1.3em;
+    text-align: center;
+}
+
+#navbar h1 a {
+    color: #dfe1e5;
+    text-decoration: none;
+}
+
+#navbar h1 a:visited {
+    color: #dfe1e5;
+}
+
+/**
+ * Channel Banner
+ */
+
+#channel-banner {
+    margin: 15px 10px;
+}
+
+#channel-banner .avatar {
+    float: left;
+    height: 100px;
+    width: 100px;
+    margin-right: 10px;
+}
+
+#channel-banner .avatar img {
+    max-width: 100%;
+
+    border: #57585a 1px solid;
+    border-radius: 100%;
+}
+
+#channel-banner .labels {
+    margin-left: 110px;
+}
+
+#channel-banner .labels h2 {
+    font-size: 1.2em;
+    line-height: 1.5em;
+}
+
+#channel-banner .labels .description {
+    height: 70px;
+    overflow-y: scroll;
+
+    font-size: 0.8em;
+    line-height: 1.1em;
+    font-weight: lighter;
+}
+
+/**
+ * Video Container
+ */
+
+#video-container {
+    margin-bottom: 15px;
+}
+
+#video-container video {
+    width: 100%;
+}
+
+/**
+ * Video Card
+ */
+
+#video-card {
+    margin: 15px 10px;
+}
+
+#video-card h2.title {
+    margin: 5px 0;
+
+    font-size: 1.2em;
+    line-height: 1.1em;
+}
+
+#video-card .minor-details {
+    margin-top: 5px;
+    margin-bottom: 15px;
+
+    font-weight: lighter;
+}
+
+#video-card .description {
+    font-size: 0.95em;
+    line-height: 1.1em;
+
+    white-space: pre-line;
+}
+
+/**
+ * Videos List
+ */
+
+#video-list .video-item {
+    margin: 15px 10px;
+    height: 80px;
+
+    background-color: #2b2d30;
+    border: #57585a 1px solid;
+    border-radius: 5px;
+}
+
+#video-list .video-item .thumbnail {
+    float: left;
+    height: 80px;
+    max-width: 142px;
+    margin-right: 5px;
+}
+
+#video-list .video-item .thumbnail img {
+    max-height: 100%;
+}
+
+#video-list .video-item .labels {
+    height: 70px;
+    padding: 5px;
+}
+
+#video-list .video-item .labels .title {
+    height: 2.05em;
+    overflow-y: hidden;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+
+    font-size: 1em;
+    line-height: 1em;
+}
+
+#video-list .video-item .labels .timestamp {
+    margin-top: 4px;
+    margin-bottom: 2px;
+
+    font-size: 0.75em;
+    font-weight: lighter;
+    color: #c3c3c7;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#video-list .video-item .labels .channel {
+    margin-bottom: 5px;
+    text-align: right;
+}
+
+#video-list .video-item .labels .channel img {
+    float: right;
+
+    height: 20px;
+    width: 20px;
+    border-radius: 100%;
+
+    margin-left: 5px;
+}
+
+#video-list .video-item .labels .channel .name {
+    font-size: 0.8em;
+    line-height: 20px;
+    font-weight: lighter;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
